@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Prisma CRUD Demo</title>
+</head>
+<body>
+  <h1>Articles CRUD</h1>
+
+<h2>Create Article</h2>
+<form id="createForm">
+  <input name="title" placeholder="Title" required /><br/>
+  <textarea name="content" placeholder="Content" required></textarea><br/>
+  <input name="excerpt" placeholder="Excerpt" /><br/>
+  <input name="imageURL" placeholder="Image URL" /><br/>
+  <input name="imageAlt" placeholder="Image Alt Text" /><br/>
+  <input name="publishDate" type="datetime-local" placeholder="Publish Date" /><br/>
+  <input name="category" placeholder="Category" /><br/>
+  <input name="author" placeholder="Author" required /><br/>
+  <input name="readTime" placeholder="Read Time" /><br/>
+  <input name="url" placeholder="URL (optional)"/><br/>
+  <button type="submit">Create</button>
+</form>
+
+
+  <h2>All Articles</h2>
+  <ul id="articlesList"></ul>
+
+  <h2>Update Article</h2>
+<form id="updateForm">
+  <input name="id" type="number" placeholder="Article ID" required /><br/>
+  <input name="title" placeholder="Title" /><br/>
+  <textarea name="content" placeholder="Content"></textarea><br/>
+  <input name="excerpt" placeholder="Excerpt" /><br/>
+  <input name="imageURL" placeholder="Image URL" /><br/>
+  <input name="imageAlt" placeholder="Image Alt Text" /><br/>
+  <input name="publishDate" type="datetime-local" placeholder="Publish Date" /><br/>
+  <input name="category" placeholder="Category" /><br/>
+  <input name="author" placeholder="Author" /><br/>
+  <input name="readTime" placeholder="Read Time" /><br/>
+  <input name="url" placeholder="URL (optional)" /><br/>
+  <button type="submit">Update Article</button>
+</form>
+
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+
+    // Fetch all articles
+    async function fetchArticles() {
+  const res = await fetch(`${API_URL}/articles`);
+  const articles = await res.json();
+  const list = document.getElementById('articlesList');
+  list.innerHTML = '';
+
+  articles.forEach(a => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      ${a.id}: ${a.title} - ${a.content}
+      <button onclick="deleteArticle(${a.id})">Delete</button>
+      <button onclick="editArticle(${a.id})">Edit</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+document.getElementById('createForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+
+  // Convert datetime-local to ISO string for Prisma
+  const publishDate = form.publishDate.value ? new Date(form.publishDate.value).toISOString() : undefined;
+
+  // Generate URL from title if not provided
+  const url = form.url.value || '/' + form.title.value.trim().toLowerCase().replace(/\s+/g, '-');
+
+  const data = {
+    title: form.title.value,
+    content: form.content.value,
+    excerpt: form.excerpt.value || null,
+    imageURL: form.imageURL.value || null,
+    imageAlt: form.imageAlt.value || null,
+    publishDate: publishDate,
+    category: form.category.value || null,
+    author: form.author.value,
+    readTime: form.readTime.value || null,
+    url: url
+  };
+
+  try {
+    await fetch(`${API_URL}/articles`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    form.reset();
+    fetchArticles(); // refresh the list
+  } catch (err) {
+    console.error(err);
+    alert('Error creating article');
+  }
+});
+
+    // Delete article
+    async function deleteArticle(id) {
+      await fetch(`${API_URL}/articles/${id}`, { method: 'DELETE' });
+      fetchArticles();
+    }
+
+    document.getElementById('updateForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+
+  const id = parseInt(form.id.value);
+
+  // Convert datetime-local to ISO string for Prisma
+  const publishDate = form.publishDate.value ? new Date(form.publishDate.value).toISOString() : undefined;
+
+  // Build the update data object, only include fields that have a value
+  const data = {};
+  if (form.title.value) data.title = form.title.value;
+  if (form.content.value) data.content = form.content.value;
+  if (form.excerpt.value) data.excerpt = form.excerpt.value;
+  if (form.imageURL.value) data.imageURL = form.imageURL.value;
+  if (form.imageAlt.value) data.imageAlt = form.imageAlt.value;
+  if (publishDate) data.publishDate = publishDate;
+  if (form.category.value) data.category = form.category.value;
+  if (form.author.value) data.author = form.author.value;
+  if (form.readTime.value) data.readTime = form.readTime.value;
+  if (form.url.value) {
+    data.url = form.url.value;
+  } else if (form.title.value) {
+    // Auto-generate URL if blank but title provided
+    data.url = '/' + form.title.value.trim().toLowerCase().replace(/\s+/g, '-');
+  }
+
+  try {
+    await fetch(`${API_URL}/articles/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    form.reset();
+    fetchArticles(); // refresh the list
+  } catch (err) {
+    console.error(err);
+    alert('Error updating article');
+  }
+});
+
+async function editArticle(id) {
+  // Fetch article details
+  const res = await fetch(`${API_URL}/articles/${id}`);
+  const article = await res.json();
+
+  const form = document.getElementById('updateForm');
+  form.id.value = article.id;
+  form.title.value = article.title || '';
+  form.content.value = article.content || '';
+  form.excerpt.value = article.excerpt || '';
+  form.imageURL.value = article.imageURL || '';
+  form.imageAlt.value = article.imageAlt || '';
+  form.publishDate.value = article.publishDate
+    ? new Date(article.publishDate).toISOString().slice(0,16)
+    : '';
+  form.category.value = article.category || '';
+  form.author.value = article.author || '';
+  form.readTime.value = article.readTime || '';
+  form.url.value = article.url || '';
+  
+  // Scroll to the form (optional)
+  form.scrollIntoView({ behavior: 'smooth' });
+}
+
+    // Load articles on page load
+    fetchArticles();
+  </script>
+</body>
+</html>
