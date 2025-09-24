@@ -11,5 +11,18 @@
     "author": "Ms.Hill",
     "readTime": "2 min",
     "url": "/a-title"
+  },
+  {
+    "id": 2,
+    "title": "ADding a new article",
+    "content": "Some contetnt",
+    "excerpt": "Some...",
+    "imageURL": "https://www.google.com/url?sa=i&url=https%3A%2F%2Ftinybuddha.com%2Fblog%2Fthe-secret-that-laid-back-always-happy-guy-knows-that-you-dont%2F&psig=AOvVaw34-1xZBkc3uDIWde1y87ql&ust=1758821503413000&source=images&cd=vfe&opi=89978449&ved=0CBYQjRxqFwoTCKiojen28Y8DFQAAAAAdAAAAABAE",
+    "imageAlt": "happy perosn",
+    "publishDate": "2025-09-24T17:53:41.576Z",
+    "category": "Education",
+    "author": "Ms.Hill",
+    "readTime": "2 min",
+    "url": "/adding-a-new-article"
   }
 ]
