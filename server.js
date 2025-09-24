@@ -15,9 +15,6 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Serve frontend
-app.use(express.static(path.join(__dirname, 'public')));
-
 const PORT = 3000;
 
 // --- API routes ---
@@ -60,6 +57,9 @@ app.delete('/articles/:id', async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+// Serve frontend (after API routes)
+app.use(express.static(path.join(__dirname, 'public')));
 
 // --- Start server ---
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
